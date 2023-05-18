@@ -28,8 +28,10 @@ async function run() {
     const toyCollection = client.db("toyVerseDB").collection("toys");
 
     // get toys
-    app.get("/toys", (req, res) => {
-      res.send("Get toys");
+    app.get("/toys", async(req, res) => {
+      const cursor = toyCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
     });
 
     // add a toy
