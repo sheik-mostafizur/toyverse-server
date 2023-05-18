@@ -25,6 +25,20 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
+    const toyCollection = client.db("toyVerseDB").collection("toys");
+
+    // get toys
+    app.get("/toys", (req, res) => {
+      res.send("Get toys");
+    });
+
+    // add a toy
+    app.post("/toys", async (req, res) => {
+      const toy = req.body;
+      const result = await toyCollection.insertOne(toy);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ping: 1});
     console.log(
