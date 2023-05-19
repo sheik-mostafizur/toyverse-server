@@ -29,16 +29,28 @@ async function run() {
 
     // get toys
     app.get("/toys", async (req, res) => {
-      const toyName = req.query.toyName;
+      const page = parseInt(req.query.page) || 0;
+      const limit = parseInt(req.query.limit) || 20;
+      const skip = page * limit;
 
-      if (!toyName) {
-        const cursor = toyCollection.find();
+      if (!req.query.toyName) {
+        const cursor = toyCollection.find().skip(skip).limit(parseInt(limit));
         const result = await cursor.toArray();
         res.send(result);
       } else {
-        const result = await toyCollection.find({toy_name: toyName}).toArray();
+        const result = await toyCollection
+          .find({toy_name: {$regex: req.query.toyName, $options: "i"}})
+          .skip(skip)
+          .limit(parseInt(limit))
+          .toArray();
         res.send(result);
       }
+    });
+
+    // Total toys in my toys collection
+    app.get("/total-toys", async (req, res) => {
+      const result = await toyCollection.estimatedDocumentCount();
+      res.send({totalToys: result});
     });
 
     // get myToys
@@ -49,13 +61,16 @@ async function run() {
       const sortOptions = {
         [sortField]: sortOrder,
       };
+      let query = {};
+      query = {email: req.query.email};
 
       if (req.query?.email && req.query?.sortOrder) {
-        const result = await toyCollection.find().sort(sortOptions).toArray();
+        const result = await toyCollection
+          .find(query)
+          .sort(sortOptions)
+          .toArray();
         res.send(result);
       } else if (req.query?.email) {
-        let query = {};
-        query = {email: req.query.email};
         const cursor = toyCollection.find(query);
         const result = await cursor.toArray();
         res.send(result);
