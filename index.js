@@ -28,20 +28,28 @@ async function run() {
     const toyCollection = client.db("toyVerseDB").collection("toys");
 
     // get toys
-    app.get("/toys", async(req, res) => {
+    app.get("/toys", async (req, res) => {
       const cursor = toyCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
 
     // get myToys
-    app.get("/my-toys", async(req, res) => {
+    app.get("/my-toys", async (req, res) => {
       let query = {};
       if (req.query?.email) {
         query = {email: req.query.email};
       }
       const cursor = toyCollection.find(query);
       const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // get a toys
+    app.get("/toys/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await toyCollection.findOne(query);
       res.send(result);
     });
 
