@@ -29,9 +29,16 @@ async function run() {
 
     // get toys
     app.get("/toys", async (req, res) => {
-      const cursor = toyCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
+      const toyName = req.query.toyName;
+
+      if (!toyName) {
+        const cursor = toyCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      } else {
+        const result = await toyCollection.find({toy_name: toyName}).toArray();
+        res.send(result);
+      }
     });
 
     // get myToys
