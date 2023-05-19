@@ -36,18 +36,31 @@ async function run() {
 
     // get myToys
     app.get("/my-toys", async (req, res) => {
-      let query = {};
-      if (req.query?.email) {
+      const sortField = req.query.sortField || "price";
+      const sortOrder = req.query.sortOrder === "desc" ? -1 : 1;
+
+      const sortOptions = {
+        [sortField]: sortOrder,
+      };
+
+      if (req.query?.email && req.query?.sortOrder) {
+        const result = await toyCollection.find().sort(sortOptions).toArray();
+        res.send(result);
+      } else if (req.query?.email) {
+        let query = {};
         query = {email: req.query.email};
+        const cursor = toyCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      } else {
+        return res.send("Data not found!");
       }
-      const cursor = toyCollection.find(query);
-      const result = await cursor.toArray();
-      res.send(result);
     });
 
     // add a toy
     app.post("/toys", async (req, res) => {
       const toy = req.body;
+      toy.price = parseInt(toy.price, 10);
       const result = await toyCollection.insertOne(toy);
       res.send(result);
     });
@@ -81,7 +94,7 @@ async function run() {
           name,
           email,
           toy_name,
-          price,
+          price: parseInt(price),
           rating,
           quantity,
           photo_url,
